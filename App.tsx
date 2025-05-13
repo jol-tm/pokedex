@@ -14,15 +14,17 @@ export default function App() {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }
 
-  const listPokemons = async (isSearching: boolean) => {
-    let urlToFetch = !isSearching || !inputValue ? `https://pokeapi.co/api/v2/pokemon/?offset=${offset}&limit=${limit}` : `https://pokeapi.co/api/v2/pokemon/${inputValue}`;
+  const listPokemons = async () => {
+    let isSearching: boolean = inputValue ? true : false;
+
+    let urlToFetch: string = !isSearching ? `https://pokeapi.co/api/v2/pokemon/?offset=${offset}&limit=${limit}` : `https://pokeapi.co/api/v2/pokemon/${inputValue}`;
 
     try {
       await fetch(urlToFetch)
         .then(Response => Response.json())
         .then((data) => {
           console.log(data);
-          
+
           let retrievedPokemons = [];
 
           if (!isSearching) {
@@ -36,12 +38,12 @@ export default function App() {
           setPokemons(retrievedPokemons);
         });
     } catch (error) {
-      console.log(error);
+      Alert.alert('Oops!', 'Pokemóm não encontrado :c');
     }
   }
 
   useEffect(() => {
-    listPokemons(false);
+    listPokemons();
   }, [offset]);
 
   return (
@@ -50,26 +52,27 @@ export default function App() {
         <StatusBar style="auto" />
         <Image source={{ uri: Image.resolveAssetSource(require('./assets/Pokemon_Logo.jpg')).uri }} style={styles.logo} />
         <TextInput style={styles.input} placeholder='Pesquise um Pokemón' onChangeText={(value) => setInputValue(value)} />
-        <TouchableOpacity style={styles.searchBtn} onPress={() => listPokemons(true)}><Text style={styles.btnTxt}>Buscar</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.searchBtn} onPress={() => listPokemons()}><Text style={styles.btnTxt}>Buscar</Text></TouchableOpacity>
 
         {pokemons.map((pokemon, index) => (
           <PokemonCard key={index} pokemonName={pokemon.name} capitalizeFirstChar={capitalizeFirstChar} />
         ))}
 
       </ScrollView>
+      {/* Botões para avancçar e retroceder na lista de pokemons de 10 em 10 */}
       <TouchableOpacity style={[styles.btn, { left: 10 }]} onPress={() => {
         if (offset >= 10) {
           setOffset(offset - 10);
         }
       }}>
-        <Text style={{ fontSize: 28, fontWeight: 'bold' }}>{'<'}</Text>
+        <Image source={{uri: Image.resolveAssetSource(require('./assets/chevron_left.png')).uri}} style={{width: 24, height: 24}} />
       </TouchableOpacity>
       <TouchableOpacity style={[styles.btn, { right: 10 }]} onPress={() => {
         if (offset <= 1290) {
           setOffset(offset + 10);
         }
       }}>
-        <Text style={{ fontSize: 28, fontWeight: 'bold' }}>{'>'}</Text>
+        <Image source={{uri: Image.resolveAssetSource(require('./assets/chevron_right.png')).uri}} style={{width: 24, height: 24}} />
       </TouchableOpacity>
     </>
   );
@@ -102,8 +105,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 10,
     backgroundColor: 'crimson',
-    paddingInline: 15,
-    paddingBlock: 5,
+    padding: 10,
     borderRadius: 10
   },
   searchBtn: {
